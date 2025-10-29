@@ -98,7 +98,7 @@ public class BookieSanityService implements HttpEndpointService {
                     return response;
                 }
                 SanityTestCommand sanity = new SanityTestCommand();
-                bs.passed = sanity.apply(config, new SanityTestCommand.SanityFlags());
+                bs.passed = sanity.apply(config, SanityTestCommand.Flags.newFlags());
             } finally {
                 lock.release();
             }

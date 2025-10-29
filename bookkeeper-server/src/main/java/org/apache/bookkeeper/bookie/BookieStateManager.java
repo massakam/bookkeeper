@@ -178,7 +178,7 @@ public class BookieStateManager implements StateManager {
                     sanityPassed.set(1);
                     return;
                 }
-                SanityTestCommand.handleAsync(conf, new SanityTestCommand.SanityFlags()).thenAccept(__ -> {
+                SanityTestCommand.handleAsync(conf, SanityTestCommand.Flags.newFlags()).thenAccept(__ -> {
                     sanityPassed.set(1);
                 }).exceptionally(ex -> {
                     sanityPassed.set(0);

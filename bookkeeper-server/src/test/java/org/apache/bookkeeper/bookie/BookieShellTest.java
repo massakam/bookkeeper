@@ -52,6 +52,7 @@ import org.apache.bookkeeper.discover.RegistrationManager;
 import org.apache.bookkeeper.meta.MetadataDrivers;
 import org.apache.bookkeeper.net.BookieId;
 import org.apache.bookkeeper.tools.cli.commands.bookie.LastMarkCommand;
+import org.apache.bookkeeper.tools.cli.commands.bookie.SanityTestCommand;
 import org.apache.bookkeeper.tools.cli.commands.bookies.ClusterInfoCommand;
 import org.apache.bookkeeper.tools.cli.commands.bookies.ListBookiesCommand;
 import org.apache.bookkeeper.tools.cli.commands.client.SimpleTestCommand;
@@ -374,6 +375,32 @@ public class BookieShellTest {
         lastMarkCommandMockedStatic.verify(() -> LastMarkCommand.newLastMarkCommand(), times(1));
         verify(mockLastMarkCommand, times(1))
             .apply(same(shell.bkConf), any(CliFlags.class));
+    }
+
+    @Test
+    public void testBookieSanityTestCmd() throws Exception {
+        SanityTestCommand.Flags mockFlags = spy(new SanityTestCommand.Flags());
+
+        @Cleanup
+        MockedStatic<SanityTestCommand.Flags> flagsMockedStatic = mockStatic(SanityTestCommand.Flags.class);
+        flagsMockedStatic.when(() -> SanityTestCommand.Flags.newFlags()).thenReturn(mockFlags);
+
+        SanityTestCommand mockCommand = spy(new SanityTestCommand());
+        doReturn(true).when(mockCommand).apply(any(ServerConfiguration.class), any(SanityTestCommand.Flags.class));
+
+        @Cleanup
+        MockedStatic<SanityTestCommand> commandMockedStatic = mockStatic(SanityTestCommand.class);
+        commandMockedStatic.when(() -> SanityTestCommand.newSanityTestCommand(mockFlags)).thenReturn(mockCommand);
+
+        shell.run(new String[] {
+            "bookiesanity",
+            "-e", "20",
+            "-t", "5"
+        });
+        commandMockedStatic.verify(() -> SanityTestCommand.newSanityTestCommand(mockFlags), times(1));
+        verify(mockCommand, times(1)).apply(same(shell.bkConf), same(mockFlags));
+        verify(mockFlags, times(1)).entries(eq(20));
+        verify(mockFlags, times(1)).timeout(eq(5));
     }
 
     @Test

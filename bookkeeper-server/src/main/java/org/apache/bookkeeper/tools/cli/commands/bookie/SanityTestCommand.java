@@ -36,7 +36,7 @@ import org.apache.bookkeeper.client.LedgerHandle;
 import org.apache.bookkeeper.common.concurrent.FutureUtils;
 import org.apache.bookkeeper.conf.ClientConfiguration;
 import org.apache.bookkeeper.conf.ServerConfiguration;
-import org.apache.bookkeeper.tools.cli.commands.bookie.SanityTestCommand.SanityFlags;
+import org.apache.bookkeeper.tools.cli.commands.bookie.SanityTestCommand.Flags;
 import org.apache.bookkeeper.tools.cli.helpers.BookieCommand;
 import org.apache.bookkeeper.tools.framework.CliFlags;
 import org.apache.bookkeeper.tools.framework.CliSpec;
@@ -46,7 +46,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A bookie command to sanity test for local bookie.
  */
-public class SanityTestCommand extends BookieCommand<SanityFlags> {
+public class SanityTestCommand extends BookieCommand<Flags> {
 
     private static final Logger LOG = LoggerFactory.getLogger(SanityTestCommand.class);
     private static final String NAME = "sanitytest";
@@ -54,11 +54,15 @@ public class SanityTestCommand extends BookieCommand<SanityFlags> {
                                            + "Create ledger and write/reads entries on local bookie.";
 
     public SanityTestCommand() {
-        this(new SanityFlags());
+        this(Flags.newFlags());
     }
 
-    public SanityTestCommand(SanityFlags flags) {
-        super(CliSpec.<SanityFlags>newBuilder().withFlags(flags).withName(NAME).withDescription(DESC).build());
+    public SanityTestCommand(Flags flags) {
+        super(CliSpec.<Flags>newBuilder().withFlags(flags).withName(NAME).withDescription(DESC).build());
+    }
+
+    public static SanityTestCommand newSanityTestCommand(Flags flags) {
+        return new SanityTestCommand(flags);
     }
 
     /**
@@ -66,7 +70,7 @@ public class SanityTestCommand extends BookieCommand<SanityFlags> {
      */
     @Accessors(fluent = true)
     @Setter
-    public static class SanityFlags extends CliFlags{
+    public static class Flags extends CliFlags {
 
         @Parameter(names = {"-e", "--entries"}, description = "Total entries to be added for the test (default 10)")
         private int entries = 10;
@@ -75,10 +79,13 @@ public class SanityTestCommand extends BookieCommand<SanityFlags> {
             "--timeout" }, description = "Timeout for write/read operations in seconds (default 1)")
         private int timeout = 1;
 
+        public static Flags newFlags() {
+            return new Flags();
+        }
     }
 
     @Override
-    public boolean apply(ServerConfiguration conf, SanityFlags cmdFlags) {
+    public boolean apply(ServerConfiguration conf, Flags cmdFlags) {
         try {
             return handle(conf, cmdFlags);
         } catch (Exception e) {
@@ -86,7 +93,7 @@ public class SanityTestCommand extends BookieCommand<SanityFlags> {
         }
     }
 
-    private static boolean handle(ServerConfiguration conf, SanityFlags cmdFlags) throws Exception {
+    private static boolean handle(ServerConfiguration conf, Flags cmdFlags) throws Exception {
         try {
             return handleAsync(conf, cmdFlags).get();
         } catch (Exception e) {
@@ -95,7 +102,7 @@ public class SanityTestCommand extends BookieCommand<SanityFlags> {
         }
     }
 
-    public static CompletableFuture<Boolean> handleAsync(ServerConfiguration conf, SanityFlags cmdFlags) {
+    public static CompletableFuture<Boolean> handleAsync(ServerConfiguration conf, Flags cmdFlags) {
         CompletableFuture<Boolean> result = new CompletableFuture<Boolean>();
         ClientConfiguration clientConf = new ClientConfiguration();
         clientConf.addConfiguration(conf);
